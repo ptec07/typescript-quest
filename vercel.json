@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/quests", "destination": "/" },
+    { "source": "/quest/(.*)", "destination": "/" },
+    { "source": "/dashboard", "destination": "/" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
