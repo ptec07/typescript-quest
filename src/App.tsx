@@ -1,5 +1,5 @@
-import { Sandpack } from '@codesandbox/sandpack-react'
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState, type ComponentType } from 'react'
+import type { SandpackProps } from '@codesandbox/sandpack-react'
 import { BrowserRouter, Link, Route, Routes, useParams } from 'react-router-dom'
 import './App.css'
 import {
@@ -12,8 +12,18 @@ import {
   type Exercise,
   type QuizOption,
 } from './content/lessons'
-import { progressPercent } from './features/progress/progress'
+import {
+  parseProgressBackup,
+  progressPercent,
+  serializeProgressBackup,
+} from './features/progress/progress'
 import { useProgress } from './features/progress/useProgress'
+
+const LazySandpack = lazy(() =>
+  import('@codesandbox/sandpack-react').then((module) => ({
+    default: module.Sandpack as ComponentType<SandpackProps>,
+  })),
+)
 
 type ProgressProps = {
   completedQuizCount: number
@@ -126,11 +136,17 @@ function DashboardPage({
   completedQuizIds,
   completedExerciseIds,
   lastOpenedLessonId,
+  backupText,
+  onImportProgress,
 }: {
   completedQuizIds: string[]
   completedExerciseIds: string[]
   lastOpenedLessonId?: string
+  backupText: string
+  onImportProgress: (rawBackup: string) => boolean
 }) {
+  const [importText, setImportText] = useState('')
+  const [importStatus, setImportStatus] = useState<string | null>(null)
   const total = lessons.length * 2
   const completed = completedQuizIds.length + completedExerciseIds.length
   const percent = progressPercent(completed, total)
@@ -165,6 +181,33 @@ function DashboardPage({
         <Link className="primary-button" to={`/quest/${lastLesson.slug}`}>
           {lastLesson.title} 이어하기
         </Link>
+      </article>
+      <article className="panel sync-card">
+        <h2>진행률 백업</h2>
+        <p>계정 없이도 이 JSON을 저장해 두면 다른 브라우저에서 진행률을 복원할 수 있습니다.</p>
+        <label className="code-label" htmlFor="progress-backup">
+          진행률 백업 데이터
+        </label>
+        <textarea id="progress-backup" className="backup-editor" readOnly value={backupText} />
+        <label className="code-label" htmlFor="progress-import">
+          백업 데이터 붙여넣기
+        </label>
+        <textarea
+          id="progress-import"
+          className="backup-editor"
+          value={importText}
+          onChange={(event) => setImportText(event.target.value)}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            const imported = onImportProgress(importText)
+            setImportStatus(imported ? '백업을 불러왔습니다.' : '백업 데이터를 읽을 수 없습니다.')
+          }}
+        >
+          백업 불러오기
+        </button>
+        {importStatus ? <p className="feedback correct">{importStatus}</p> : null}
       </article>
       <div className="lesson-grid compact">
         {lessons.map((lesson) => {
@@ -343,11 +386,13 @@ function PracticeWorkspace({
           onChange={(event) => setCode(event.target.value)}
           spellCheck={false}
         />
-        <Sandpack
-          template="react"
-          files={{ '/App.js': code }}
-          options={{ activeFile: '/App.js', visibleFiles: ['/App.js'], showTabs: true }}
-        />
+        <Suspense fallback={<div className="sandpack-loading">실습 미리보기를 불러오는 중입니다…</div>}>
+          <LazySandpack
+            template="react"
+            files={{ '/App.js': code }}
+            options={{ activeFile: '/App.js', visibleFiles: ['/App.js'], showTabs: true }}
+          />
+        </Suspense>
       </div>
     </div>
   )
@@ -383,7 +428,7 @@ function NotFoundPage() {
 }
 
 function AppRoutes() {
-  const { progress, completeQuiz, completeExercise, openLesson } = useProgress()
+  const { progress, completeQuiz, completeExercise, openLesson, replaceProgress } = useProgress()
 
   return (
     <AppShell
@@ -410,6 +455,13 @@ function AppRoutes() {
               completedQuizIds={progress.completedQuizIds}
               completedExerciseIds={progress.completedExerciseIds}
               lastOpenedLessonId={progress.lastOpenedLessonId}
+              backupText={serializeProgressBackup(progress)}
+              onImportProgress={(rawBackup) => {
+                const nextProgress = parseProgressBackup(rawBackup)
+                if (!nextProgress) return false
+                replaceProgress(nextProgress)
+                return true
+              }}
             />
           }
         />

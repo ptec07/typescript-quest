@@ -34,6 +34,24 @@ export function readProgress(): Progress {
   }
 }
 
+export function parseProgressBackup(raw: string): Progress | null {
+  try {
+    const parsed = JSON.parse(raw) as Partial<Progress>
+    return {
+      completedQuizIds: stringArray(parsed.completedQuizIds),
+      completedExerciseIds: stringArray(parsed.completedExerciseIds),
+      lastOpenedLessonId:
+        typeof parsed.lastOpenedLessonId === 'string' ? parsed.lastOpenedLessonId : undefined,
+    }
+  } catch {
+    return null
+  }
+}
+
+export function serializeProgressBackup(progress: Progress) {
+  return JSON.stringify(progress, null, 2)
+}
+
 export function writeProgress(progress: Progress) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress))
 }

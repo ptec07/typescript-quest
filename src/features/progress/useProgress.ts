@@ -32,10 +32,16 @@ export function useProgress() {
     [update],
   )
 
+  const replaceProgress = useCallback((next: Progress) => {
+    writeProgress(next)
+    setProgress(next)
+  }, [])
+
   return {
     progress,
     completeQuiz,
     completeExercise,
     openLesson,
+    replaceProgress,
   }
 }

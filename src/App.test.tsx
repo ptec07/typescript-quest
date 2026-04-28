@@ -1,8 +1,8 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, beforeEach } from 'vitest'
 import App from './App'
-import { exercises, getExerciseForLesson, lessons } from './content/lessons'
+import { exercises, getExerciseForLesson, gradeExercise, lessons } from './content/lessons'
 import { STORAGE_KEY } from './features/progress/progress'
 
 function renderAt(path: string) {
@@ -60,6 +60,18 @@ describe('TypeScript Quest', () => {
       'href',
       '/quest/react-events',
     )
+    expect(screen.getByRole('link', { name: /리터럴 유니언 타입 퀘스트 열기/i })).toHaveAttribute(
+      'href',
+      '/quest/literal-unions',
+    )
+    expect(screen.getByRole('link', { name: /함수 타입 퀘스트 열기/i })).toHaveAttribute(
+      'href',
+      '/quest/function-types',
+    )
+    expect(screen.getByRole('link', { name: /타입 좁히기 퀘스트 열기/i })).toHaveAttribute(
+      'href',
+      '/quest/type-narrowing',
+    )
   })
 
   it('shows a lesson page with quiz feedback and persists completed quiz progress', async () => {
@@ -82,7 +94,7 @@ describe('TypeScript Quest', () => {
 
     expect(screen.getByRole('heading', { name: /배열과 튜플 실습/i })).toBeInTheDocument()
     expect(screen.getAllByText(/readonly string\[]/i).length).toBeGreaterThan(0)
-    expect(screen.getByTestId('sandpack-preview')).toHaveAttribute('data-active-file', '/App.js')
+    expect(await screen.findByTestId('sandpack-preview')).toHaveAttribute('data-active-file', '/App.js')
     expect(screen.queryByText(/Hello world/i)).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /정답 보기/i }))
@@ -153,8 +165,8 @@ describe('TypeScript Quest', () => {
     renderAt('/dashboard')
 
     expect(screen.getByRole('heading', { name: /진행률 대시보드/i })).toBeInTheDocument()
-    expect(screen.getByText(/2\/12 완료/i)).toBeInTheDocument()
-    expect(screen.getAllByText(/17%/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/2\/18 완료/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/11%/i).length).toBeGreaterThan(0)
     expect(screen.getByRole('link', { name: /useState 타입 이어하기/i })).toHaveAttribute(
       'href',
       '/quest/react-usestate',
@@ -163,5 +175,70 @@ describe('TypeScript Quest', () => {
     renderAt('/quests')
     const primitiveCard = screen.getByTestId('lesson-card-primitive-types')
     expect(within(primitiveCard).getByText(/퀘스트 완료/i)).toBeInTheDocument()
+  })
+
+
+  it('adds TypeScript handbook quests for literal unions, functions, and narrowing', () => {
+    renderAt('/quest/literal-unions')
+
+    expect(screen.getByRole('heading', { name: /리터럴 유니언 타입/i })).toBeInTheDocument()
+    expect(lessons.map((lesson) => lesson.slug)).toEqual(
+      expect.arrayContaining(['literal-unions', 'function-types', 'type-narrowing']),
+    )
+    expect(exercises.map((exercise) => exercise.id)).toEqual(
+      expect.arrayContaining([
+        'literal-unions-practice',
+        'function-types-practice',
+        'type-narrowing-practice',
+      ]),
+    )
+  })
+
+  it('uses AST-aware grading so comments alone do not pass structural checks', () => {
+    const exercise = getExerciseForLesson('function-types')
+    expect(exercise).toBeDefined()
+
+    const commentOnlyCode = `
+      // type ScoreFormatter = (score: number) => string
+      // score: number
+      export default function App() { return <h1>fake</h1> }
+    `
+
+    expect(gradeExercise(exercise!, commentOnlyCode).every((result) => result.passed)).toBe(false)
+    expect(gradeExercise(exercise!, exercise!.solutionCode).every((result) => result.passed)).toBe(true)
+  })
+
+
+  it('exports and imports progress backup data from the dashboard without login', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        completedQuizIds: ['primitive-types-basic'],
+        completedExerciseIds: [],
+        lastOpenedLessonId: 'function-types',
+      }),
+    )
+
+    renderAt('/dashboard')
+
+    expect(screen.queryByText(/로그인/i)).not.toBeInTheDocument()
+    const exportBox = screen.getByLabelText(/진행률 백업 데이터/i)
+    expect((exportBox as HTMLTextAreaElement).value).toContain('primitive-types-basic')
+
+    fireEvent.change(screen.getByLabelText(/백업 데이터 붙여넣기/i), {
+      target: { value: JSON.stringify({
+        completedQuizIds: ['function-types-basic'],
+        completedExerciseIds: ['function-types-practice'],
+        lastOpenedLessonId: 'type-narrowing',
+      }) },
+    })
+    await user.click(screen.getByRole('button', { name: /백업 불러오기/i }))
+
+    expect(localStorage.getItem(STORAGE_KEY)).toContain('function-types-practice')
+    expect(screen.getByRole('link', { name: /타입 좁히기 이어하기/i })).toHaveAttribute(
+      'href',
+      '/quest/type-narrowing',
+    )
   })
 })

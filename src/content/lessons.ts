@@ -255,6 +255,109 @@ export const lessons: Lesson[] = [
       ],
     },
   },
+
+  {
+    id: 'literal-unions',
+    slug: 'literal-unions',
+    title: '리터럴 유니언 타입',
+    subtitle: '정해진 문자열 값만 허용해 상태와 옵션을 안전하게 제한하기',
+    summary: '문자열 리터럴과 유니언 타입으로 화면 상태, 크기, 모드처럼 허용 가능한 값의 집합을 명확히 표현합니다.',
+    objectives: [
+      '문자열 리터럴 타입과 유니언 타입을 조합한다.',
+      '임의 string보다 좁은 상태 타입을 설계한다.',
+      '허용되지 않는 값이 컴파일 단계에서 막히는 이유를 설명한다.',
+    ],
+    docAnchors: ['Union Types', 'Literal Types', 'Combining Unions with Literal Types'],
+    quiz: {
+      id: 'literal-unions-basic',
+      question: '버튼 크기를 small 또는 large로만 제한하는 타입은?',
+      options: [
+        {
+          label: "type ButtonSize = 'small' | 'large'",
+          correct: true,
+          explanation: '문자열 리터럴 유니언은 허용 가능한 문자열 값의 집합을 직접 표현합니다.',
+        },
+        {
+          label: 'type ButtonSize = string',
+          correct: false,
+          explanation: 'string은 모든 문자열을 허용하므로 small/large 제한이 사라집니다.',
+        },
+        {
+          label: 'type ButtonSize = boolean',
+          correct: false,
+          explanation: 'boolean은 true/false만 표현하며 크기 이름에는 맞지 않습니다.',
+        },
+      ],
+    },
+  },
+  {
+    id: 'function-types',
+    slug: 'function-types',
+    title: '함수 타입',
+    subtitle: '매개변수와 반환값 타입으로 함수 계약 만들기',
+    summary: '함수 매개변수와 반환값에 타입을 붙여 호출자가 기대할 수 있는 입력과 출력을 명확히 합니다.',
+    objectives: [
+      '함수 매개변수 타입과 반환 타입을 작성한다.',
+      '함수 타입 별칭으로 콜백의 계약을 표현한다.',
+      'React 코드에서도 작은 포매터 함수를 타입 안전하게 재사용한다.',
+    ],
+    docAnchors: ['Functions', 'Parameter Type Annotations', 'Return Type Annotations'],
+    quiz: {
+      id: 'function-types-basic',
+      question: '점수를 받아 문자열 라벨을 반환하는 함수 타입으로 알맞은 것은?',
+      options: [
+        {
+          label: 'type ScoreFormatter = (score: number) => string',
+          correct: true,
+          explanation: 'number 매개변수를 받아 string을 반환하는 콜백 계약입니다.',
+        },
+        {
+          label: 'type ScoreFormatter = string',
+          correct: false,
+          explanation: '함수 타입은 호출 시그니처를 표현해야 합니다.',
+        },
+        {
+          label: 'type ScoreFormatter = (score: string) => number',
+          correct: false,
+          explanation: '문제의 입력/출력 방향과 반대입니다.',
+        },
+      ],
+    },
+  },
+  {
+    id: 'type-narrowing',
+    slug: 'type-narrowing',
+    title: '타입 좁히기',
+    subtitle: 'typeof와 조건문으로 유니언 값을 안전하게 다루기',
+    summary: '유니언 타입 값을 사용하기 전에 typeof, 조건문, early return으로 가능한 타입을 좁히는 방법을 익힙니다.',
+    objectives: [
+      'typeof 검사로 string과 number를 구분한다.',
+      '좁혀진 블록 안에서 타입별 메서드를 안전하게 호출한다.',
+      'unknown과 union 값 처리 흐름을 React UI에 연결한다.',
+    ],
+    docAnchors: ['Narrowing', 'typeof type guards', 'Control flow analysis'],
+    quiz: {
+      id: 'type-narrowing-basic',
+      question: 'string | number 값을 문자열로 포맷하기 전에 필요한 것은?',
+      options: [
+        {
+          label: 'typeof value === "string" 같은 타입 가드',
+          correct: true,
+          explanation: '타입 가드는 분기 안에서 value를 더 구체적인 타입으로 좁힙니다.',
+        },
+        {
+          label: '무조건 value.toUpperCase() 호출',
+          correct: false,
+          explanation: 'number일 수 있으므로 문자열 메서드를 바로 호출하면 안전하지 않습니다.',
+        },
+        {
+          label: 'as any로 바꾸기',
+          correct: false,
+          explanation: 'any 캐스팅은 타입 검사를 우회해 학습 목표와 반대입니다.',
+        },
+      ],
+    },
+  },
 ]
 
 export const exercises: Exercise[] = [
@@ -433,6 +536,99 @@ export default function App() {
 }`,
     explanation: 'React 이벤트 타입을 붙이면 currentTarget의 요소 타입을 안전하게 사용할 수 있습니다.',
   },
+
+  {
+    id: 'literal-unions-practice',
+    lessonId: 'literal-unions',
+    title: '버튼 variant를 리터럴 유니언으로 제한하기',
+    prompt: 'ButtonVariant 타입을 primary 또는 secondary로 제한하고 props에 적용하세요.',
+    hints: ["'primary' | 'secondary' 형태의 문자열 리터럴 유니언을 사용하세요.", 'props 타입의 variant 필드에 ButtonVariant를 연결하세요.'],
+    checks: [
+      { label: 'ButtonVariant 리터럴 유니언 선언', includes: ['type ButtonVariant', "'primary' | 'secondary'"] },
+      { label: 'variant props에 ButtonVariant 적용', includes: ['variant: ButtonVariant'] },
+    ],
+    starterCode: `type ButtonProps = {
+  variant: string
+  label: string
+}
+
+function QuestButton({ variant, label }: ButtonProps) {
+  return <button className={variant}>{label}</button>
+}
+
+export default function App() {
+  return <QuestButton variant="primary" label="시작" />
+}`,
+    solutionCode: `type ButtonVariant = 'primary' | 'secondary'
+
+type ButtonProps = {
+  variant: ButtonVariant
+  label: string
+}
+
+function QuestButton({ variant, label }: ButtonProps) {
+  return <button className={variant}>{label}</button>
+}
+
+export default function App() {
+  return <QuestButton variant="primary" label="시작" />
+}`,
+    explanation: '리터럴 유니언을 사용하면 컴포넌트 API가 허용하는 문자열 옵션을 코드로 문서화할 수 있습니다.',
+  },
+  {
+    id: 'function-types-practice',
+    lessonId: 'function-types',
+    title: '점수 포매터 함수 타입 만들기',
+    prompt: 'ScoreFormatter 함수 타입을 만들고 score: number를 받아 string을 반환하게 하세요.',
+    hints: ['함수 타입 별칭은 (score: number) => string 형태입니다.', 'formatScore 함수에 ScoreFormatter 타입을 붙이세요.'],
+    checks: [
+      { label: 'ScoreFormatter 함수 타입 선언', includes: ['type ScoreFormatter', '(score: number) => string'] },
+      { label: 'formatScore에 ScoreFormatter 적용', includes: ['formatScore: ScoreFormatter'] },
+    ],
+    starterCode: `const formatScore = (score) => String(score) + '점'
+
+export default function App() {
+  return <h1>{formatScore(95)}</h1>
+}`,
+    solutionCode: `type ScoreFormatter = (score: number) => string
+
+const formatScore: ScoreFormatter = (score) => String(score) + '점'
+
+export default function App() {
+  return <h1>{formatScore(95)}</h1>
+}`,
+    explanation: '함수 타입 별칭을 사용하면 여러 곳에서 같은 콜백 계약을 재사용할 수 있습니다.',
+  },
+  {
+    id: 'type-narrowing-practice',
+    lessonId: 'type-narrowing',
+    title: 'string | number 값을 타입별로 포맷하기',
+    prompt: 'value가 string이면 대문자로, number이면 고정 소수점 문자열로 포맷하세요.',
+    hints: ['typeof value === "string" 조건을 먼저 사용하세요.', 'number 분기에서는 value.toFixed(1)을 사용할 수 있습니다.'],
+    checks: [
+      { label: 'string | number 유니언 매개변수 사용', includes: ['value: string | number'] },
+      { label: 'typeof로 string 좁히기', includes: ["typeof value === 'string'"] },
+      { label: 'number 분기에서 toFixed 사용', includes: ['toFixed(1)'] },
+    ],
+    starterCode: `function formatValue(value) {
+  return value.toUpperCase()
+}
+
+export default function App() {
+  return <h1>{formatValue('quest')}</h1>
+}`,
+    solutionCode: `function formatValue(value: string | number) {
+  if (typeof value === 'string') {
+    return value.toUpperCase()
+  }
+  return value.toFixed(1)
+}
+
+export default function App() {
+  return <h1>{formatValue('quest')}</h1>
+}`,
+    explanation: '타입 가드는 분기 안에서 유니언 값을 더 구체적인 타입으로 좁혀 안전한 메서드 호출을 가능하게 합니다.',
+  },
 ]
 
 export function getLessonBySlug(slug: string | undefined) {
@@ -447,9 +643,66 @@ export function getExerciseForLesson(lessonId: string) {
   return exercises.find((exercise) => exercise.lessonId === lessonId)
 }
 
+function sourceTextWithoutComments(code: string) {
+  let result = ''
+  let index = 0
+  let quote: 'single' | 'double' | 'template' | null = null
+
+  while (index < code.length) {
+    const current = code[index]
+    const next = code[index + 1]
+
+    if (quote) {
+      result += current
+      if (current === '\\') {
+        result += next ?? ''
+        index += 2
+        continue
+      }
+      if (
+        (quote === 'single' && current === "'") ||
+        (quote === 'double' && current === '"') ||
+        (quote === 'template' && current === '`')
+      ) {
+        quote = null
+      }
+      index += 1
+      continue
+    }
+
+    if (current === "'") quote = 'single'
+    if (current === '"') quote = 'double'
+    if (current === '`') quote = 'template'
+
+    if (current === '/' && next === '/') {
+      while (index < code.length && code[index] !== '\n') index += 1
+      result += '\n'
+      index += 1
+      continue
+    }
+
+    if (current === '/' && next === '*') {
+      index += 2
+      while (index < code.length && !(code[index] === '*' && code[index + 1] === '/')) {
+        result += code[index] === '\n' ? '\n' : ' '
+        index += 1
+      }
+      index += 2
+      continue
+    }
+
+    result += current
+    index += 1
+  }
+
+  return result
+}
+
 export function gradeExercise(exercise: Exercise, code: string) {
+  const checkableSource = sourceTextWithoutComments(code)
+
   return exercise.checks.map((check) => ({
     ...check,
-    passed: check.includes.every((needle) => code.includes(needle)),
+    passed: check.includes.every((needle) => checkableSource.includes(needle)),
   }))
 }
