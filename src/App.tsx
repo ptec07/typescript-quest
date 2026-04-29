@@ -13,6 +13,7 @@ import {
   type QuizOption,
 } from './content/lessons'
 import {
+  emptyProgress,
   parseProgressBackup,
   progressPercent,
   serializeProgressBackup,
@@ -138,19 +139,28 @@ function DashboardPage({
   lastOpenedLessonId,
   backupText,
   onImportProgress,
+  onResetProgress,
 }: {
   completedQuizIds: string[]
   completedExerciseIds: string[]
   lastOpenedLessonId?: string
   backupText: string
   onImportProgress: (rawBackup: string) => boolean
+  onResetProgress: () => void
 }) {
   const [importText, setImportText] = useState('')
   const [importStatus, setImportStatus] = useState<string | null>(null)
+  const [copyStatus, setCopyStatus] = useState<string | null>(null)
   const total = lessons.length * 2
   const completed = completedQuizIds.length + completedExerciseIds.length
   const percent = progressPercent(completed, total)
   const lastLesson = getLessonById(lastOpenedLessonId) ?? lessons[0]
+  const backupDownloadHref = `data:application/json;charset=utf-8,${encodeURIComponent(backupText)}`
+
+  async function copyBackup() {
+    await navigator.clipboard?.writeText(backupText)
+    setCopyStatus('백업 데이터를 복사했습니다.')
+  }
 
   return (
     <section className="page-section dashboard-page">
@@ -189,6 +199,26 @@ function DashboardPage({
           진행률 백업 데이터
         </label>
         <textarea id="progress-backup" className="backup-editor" readOnly value={backupText} />
+        <div className="backup-actions">
+          <button type="button" onClick={copyBackup}>
+            백업 복사
+          </button>
+          <a className="primary-button secondary-button" href={backupDownloadHref} download="typescript-quest-progress.json">
+            JSON 다운로드
+          </a>
+          <button
+            className="danger-button"
+            type="button"
+            onClick={() => {
+              onResetProgress()
+              setImportText('')
+              setImportStatus('진행률을 초기화했습니다.')
+            }}
+          >
+            진행률 초기화
+          </button>
+        </div>
+        {copyStatus ? <p className="feedback correct">{copyStatus}</p> : null}
         <label className="code-label" htmlFor="progress-import">
           백업 데이터 붙여넣기
         </label>
@@ -462,6 +492,7 @@ function AppRoutes() {
                 replaceProgress(nextProgress)
                 return true
               }}
+              onResetProgress={() => replaceProgress(emptyProgress())}
             />
           }
         />

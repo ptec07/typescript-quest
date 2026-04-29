@@ -45,6 +45,24 @@ button:hover,
   text-decoration: none;
 }
 
+.secondary-button {
+  background: #e8f0ff;
+  color: #255ec4;
+}
+
+.secondary-button:hover {
+  background: #d7e5ff;
+}
+
+.danger-button {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.danger-button:hover {
+  background: #fecaca;
+}
+
 .app-shell {
   min-height: 100vh;
   display: grid;
@@ -128,7 +146,8 @@ h2 {
 
 .cta-row,
 .practice-actions,
-.badge-row {
+.badge-row,
+.backup-actions {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -249,8 +268,8 @@ h2 {
   font-weight: 900;
   margin-bottom: 0.5rem;
 }
-
-.code-editor {
+.code-editor,
+.backup-editor {
   border: 1px solid #c9d7ee;
   border-radius: 18px;
   color: #101828;
@@ -260,6 +279,14 @@ h2 {
   padding: 1rem;
   resize: vertical;
   width: 100%;
+}
+
+.backup-editor {
+  min-height: 150px;
+}
+
+.backup-actions {
+  margin: 0.75rem 0 1rem;
 }
 
 .stat-card {

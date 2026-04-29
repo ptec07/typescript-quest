@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, beforeEach } from 'vitest'
+import { describe, expect, it, beforeEach, vi } from 'vitest'
 import App from './App'
 import { exercises, getExerciseForLesson, gradeExercise, lessons } from './content/lessons'
 import { STORAGE_KEY } from './features/progress/progress'
@@ -71,6 +71,18 @@ describe('TypeScript Quest', () => {
     expect(screen.getByRole('link', { name: /타입 좁히기 퀘스트 열기/i })).toHaveAttribute(
       'href',
       '/quest/type-narrowing',
+    )
+    expect(screen.getByRole('link', { name: /객체 타입 퀘스트 열기/i })).toHaveAttribute(
+      'href',
+      '/quest/object-types',
+    )
+    expect(screen.getByRole('link', { name: /인터페이스와 타입 별칭 퀘스트 열기/i })).toHaveAttribute(
+      'href',
+      '/quest/interfaces-type-aliases',
+    )
+    expect(screen.getByRole('link', { name: /제네릭 기초 퀘스트 열기/i })).toHaveAttribute(
+      'href',
+      '/quest/generics-basics',
     )
   })
 
@@ -165,8 +177,8 @@ describe('TypeScript Quest', () => {
     renderAt('/dashboard')
 
     expect(screen.getByRole('heading', { name: /진행률 대시보드/i })).toBeInTheDocument()
-    expect(screen.getByText(/2\/18 완료/i)).toBeInTheDocument()
-    expect(screen.getAllByText(/11%/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/2\/24 완료/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/8%/i).length).toBeGreaterThan(0)
     expect(screen.getByRole('link', { name: /useState 타입 이어하기/i })).toHaveAttribute(
       'href',
       '/quest/react-usestate',
@@ -190,6 +202,23 @@ describe('TypeScript Quest', () => {
         'literal-unions-practice',
         'function-types-practice',
         'type-narrowing-practice',
+      ]),
+    )
+  })
+
+
+  it('adds object, interface, and generic quests with curated exercises', () => {
+    renderAt('/quest/object-types')
+
+    expect(screen.getByRole('heading', { name: /객체 타입/i })).toBeInTheDocument()
+    expect(lessons.map((lesson) => lesson.slug)).toEqual(
+      expect.arrayContaining(['object-types', 'interfaces-type-aliases', 'generics-basics']),
+    )
+    expect(exercises.map((exercise) => exercise.id)).toEqual(
+      expect.arrayContaining([
+        'object-types-practice',
+        'interfaces-type-aliases-practice',
+        'generics-basics-practice',
       ]),
     )
   })
@@ -241,4 +270,34 @@ describe('TypeScript Quest', () => {
       '/quest/type-narrowing',
     )
   })
+
+  it('copies, downloads, and resets progress backup data without accounts', async () => {
+    const user = userEvent.setup()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    })
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        completedQuizIds: ['primitive-types-basic'],
+        completedExerciseIds: ['primitive-types-practice'],
+        lastOpenedLessonId: 'primitive-types',
+      }),
+    )
+
+    renderAt('/dashboard')
+
+    await user.click(screen.getByRole('button', { name: /백업 복사/i }))
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('primitive-types-basic'))
+    expect(screen.getByText(/백업 데이터를 복사했습니다/i)).toBeInTheDocument()
+
+    expect(screen.getByRole('link', { name: /JSON 다운로드/i })).toHaveAttribute('download', 'typescript-quest-progress.json')
+
+    await user.click(screen.getByRole('button', { name: /진행률 초기화/i }))
+    expect(localStorage.getItem(STORAGE_KEY)).not.toContain('primitive-types-basic')
+    expect(screen.getByRole('link', { name: /원시 타입 이어하기/i })).toHaveAttribute('href', '/quest/primitive-types')
+  })
+
 })

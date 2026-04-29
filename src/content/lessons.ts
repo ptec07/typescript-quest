@@ -324,6 +324,109 @@ export const lessons: Lesson[] = [
       ],
     },
   },
+
+  {
+    id: 'object-types',
+    slug: 'object-types',
+    title: '객체 타입',
+    subtitle: '여러 필드를 가진 값을 구조적으로 설명하기',
+    summary: '객체 타입으로 프로필, 설정, API 응답처럼 여러 속성을 가진 값을 안전하게 다루는 방법을 익힙니다.',
+    objectives: [
+      '객체 속성별 타입을 작성한다.',
+      '선택적 속성 ? 표기를 읽고 사용한다.',
+      '컴포넌트 props와 일반 객체 데이터에 같은 구조 타입을 적용한다.',
+    ],
+    docAnchors: ['Object Types', 'Optional Properties', 'Property Modifiers'],
+    quiz: {
+      id: 'object-types-basic',
+      question: 'name은 string, level은 number인 플레이어 객체 타입으로 알맞은 것은?',
+      options: [
+        {
+          label: 'type Player = { name: string; level: number }',
+          correct: true,
+          explanation: '객체 타입은 속성 이름과 각 속성의 타입을 함께 선언합니다.',
+        },
+        {
+          label: 'type Player = string | number',
+          correct: false,
+          explanation: '유니언은 값의 후보 타입을 표현하지만 객체 속성 구조를 설명하지 않습니다.',
+        },
+        {
+          label: 'type Player = [string, number]',
+          correct: false,
+          explanation: '튜플은 위치 기반 구조이며 name/level 같은 속성 이름을 갖는 객체 타입과 다릅니다.',
+        },
+      ],
+    },
+  },
+  {
+    id: 'interfaces-type-aliases',
+    slug: 'interfaces-type-aliases',
+    title: '인터페이스와 타입 별칭',
+    subtitle: 'interface와 type으로 재사용 가능한 구조 이름 붙이기',
+    summary: 'interface와 type alias의 공통점과 차이를 이해하고 컴포넌트 props 구조에 이름을 붙입니다.',
+    objectives: [
+      'interface로 객체 구조를 선언한다.',
+      'type alias와 interface가 객체 타입에 모두 쓰일 수 있음을 이해한다.',
+      '확장 가능한 props 구조를 설계한다.',
+    ],
+    docAnchors: ['Interfaces', 'Type Aliases', 'Extending Types'],
+    quiz: {
+      id: 'interfaces-type-aliases-basic',
+      question: 'CardProps 객체 구조를 interface로 선언하는 예는?',
+      options: [
+        {
+          label: 'interface CardProps { title: string; description: string }',
+          correct: true,
+          explanation: 'interface는 객체 구조에 이름을 붙이는 대표적인 방법입니다.',
+        },
+        {
+          label: 'interface CardProps = string',
+          correct: false,
+          explanation: 'interface는 등호가 아니라 중괄호 본문으로 객체 구조를 선언합니다.',
+        },
+        {
+          label: 'const CardProps = { title: string }',
+          correct: false,
+          explanation: 'const는 런타임 값 선언이며 타입 선언 문법이 아닙니다.',
+        },
+      ],
+    },
+  },
+  {
+    id: 'generics-basics',
+    slug: 'generics-basics',
+    title: '제네릭 기초',
+    subtitle: '입력 타입을 보존하는 재사용 함수 만들기',
+    summary: '제네릭 타입 매개변수로 배열, API 응답, 헬퍼 함수가 입력 타입 정보를 잃지 않도록 설계합니다.',
+    objectives: [
+      '<T> 타입 매개변수의 역할을 설명한다.',
+      '입력과 출력의 타입 관계를 제네릭으로 보존한다.',
+      'React 코드 안에서 작은 제네릭 헬퍼를 안전하게 사용한다.',
+    ],
+    docAnchors: ['Generics', 'Generic Functions', 'Working with Generic Type Variables'],
+    quiz: {
+      id: 'generics-basics-basic',
+      question: '입력값의 타입을 그대로 반환 타입에 연결하는 함수 선언은?',
+      options: [
+        {
+          label: 'function identity<T>(value: T): T',
+          correct: true,
+          explanation: 'T가 입력과 출력에 모두 쓰여 타입 관계가 유지됩니다.',
+        },
+        {
+          label: 'function identity(value: any): any',
+          correct: false,
+          explanation: 'any는 타입 정보를 잃어버리므로 제네릭의 장점이 사라집니다.',
+        },
+        {
+          label: 'function identity(value: string): number',
+          correct: false,
+          explanation: '입력 타입과 출력 타입을 보존하지 않습니다.',
+        },
+      ],
+    },
+  },
   {
     id: 'type-narrowing',
     slug: 'type-narrowing',
@@ -598,6 +701,102 @@ export default function App() {
   return <h1>{formatScore(95)}</h1>
 }`,
     explanation: '함수 타입 별칭을 사용하면 여러 곳에서 같은 콜백 계약을 재사용할 수 있습니다.',
+  },
+
+  {
+    id: 'object-types-practice',
+    lessonId: 'object-types',
+    title: 'Player 객체 타입 만들기',
+    prompt: 'Player 타입을 선언하고 name, level, premium 속성을 안전하게 표현하세요.',
+    hints: ['type Player = { ... } 형태로 객체 구조에 이름을 붙입니다.', '선택 속성이 필요하면 premium?: boolean처럼 ?를 사용하세요.'],
+    checks: [
+      { label: 'Player 객체 타입 선언', includes: ['type Player', 'name: string', 'level: number'] },
+      { label: '선택적 premium 속성 사용', includes: ['premium?: boolean'] },
+    ],
+    starterCode: `const player = {
+  name: 'Mingyu',
+  level: 12,
+}
+
+export default function App() {
+  return <h1>{player.name} · Lv.{player.level}</h1>
+}`,
+    solutionCode: `type Player = {
+  name: string
+  level: number
+  premium?: boolean
+}
+
+const player: Player = {
+  name: 'Mingyu',
+  level: 12,
+}
+
+export default function App() {
+  return <h1>{player.name} · Lv.{player.level}</h1>
+}`,
+    explanation: '객체 타입은 여러 속성의 이름과 타입을 함께 문서화하며 선택 속성은 ?로 표시합니다.',
+  },
+  {
+    id: 'interfaces-type-aliases-practice',
+    lessonId: 'interfaces-type-aliases',
+    title: 'QuestCardProps interface 선언하기',
+    prompt: 'QuestCardProps interface를 만들고 컴포넌트 props 타입으로 적용하세요.',
+    hints: ['interface QuestCardProps { title: string; completed: boolean }처럼 선언하세요.', '컴포넌트 매개변수 구조분해 뒤에 : QuestCardProps를 붙이세요.'],
+    checks: [
+      { label: 'QuestCardProps interface 선언', includes: ['interface QuestCardProps', 'title: string', 'completed: boolean'] },
+      { label: '컴포넌트 props에 interface 적용', includes: [': QuestCardProps'] },
+    ],
+    starterCode: `function QuestCard({ title, completed }) {
+  return <article><h1>{title}</h1><p>{completed ? '완료' : '진행 중'}</p></article>
+}
+
+export default function App() {
+  return <QuestCard title="객체 타입" completed={false} />
+}`,
+    solutionCode: `interface QuestCardProps {
+  title: string
+  completed: boolean
+}
+
+function QuestCard({ title, completed }: QuestCardProps) {
+  return <article><h1>{title}</h1><p>{completed ? '완료' : '진행 중'}</p></article>
+}
+
+export default function App() {
+  return <QuestCard title="객체 타입" completed={false} />
+}`,
+    explanation: 'interface는 객체 형태의 props 계약에 이름을 붙이고 컴포넌트 경계를 명확하게 만듭니다.',
+  },
+  {
+    id: 'generics-basics-practice',
+    lessonId: 'generics-basics',
+    title: 'first<T> 제네릭 함수 만들기',
+    prompt: '배열의 첫 원소를 반환하는 first 함수를 제네릭으로 바꿔 원소 타입을 보존하세요.',
+    hints: ['function first<T>(items: T[]): T 형태를 사용합니다.', 'string[]을 넣으면 반환값도 string으로 추론되어야 합니다.'],
+    checks: [
+      { label: 'first<T> 제네릭 함수 선언', includes: ['function first<T>', 'items: T[]'] },
+      { label: '반환 타입에 T 사용', includes: ['): T'] },
+    ],
+    starterCode: `function first(items) {
+  return items[0]
+}
+
+const firstQuest = first(['객체 타입', '제네릭'])
+
+export default function App() {
+  return <h1>{firstQuest}</h1>
+}`,
+    solutionCode: `function first<T>(items: T[]): T {
+  return items[0]
+}
+
+const firstQuest = first(['객체 타입', '제네릭'])
+
+export default function App() {
+  return <h1>{firstQuest}</h1>
+}`,
+    explanation: '제네릭 함수는 입력 배열의 원소 타입 T를 반환 타입에도 연결해 타입 정보를 보존합니다.',
   },
   {
     id: 'type-narrowing-practice',
